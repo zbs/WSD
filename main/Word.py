@@ -1,6 +1,6 @@
 import numpy as np
 import scipy as sp
-from sklearn.svm.sparse import SVC
+from sklearn import svm
 
 CACHE_SIZE = 1000
 PENALTY = 1.0 #svm penalty parameter
@@ -15,9 +15,10 @@ class Word(object):
     contexts = []
     cv_contexts = None
     cv_classez = None
+    num_classes = None
     test_contexts = []
     test_classez = []
-    models = []
+    model = None
     
     def __init__(self, tag, feature_funs):
         self.tag = tag
@@ -46,38 +47,32 @@ class Word(object):
         features = map(lambda f: map(lambda c: f(self.tag, c), contexts), self.feature_funs) #[n_features, n_samples]
         avgs = map(sp.mean, features)
         stds = map(sp.std, features)
-        for std in stds:
+        for std in stds: #sanity check
             if std == 0:
                 print "Div/0 Error: feature has standard deviation = 0."
         normalized = map( lambda feature, avg, std: map( lambda X: (X-avg)/std, feature), features, avgs, stds)
-        return zip(*normalized) # 2-dim array [n_samples, n_features]
-        
+        return zip(*normalized)  # 2-dim array [n_samples, n_features]
+    
+    #reverse conversion
+            
     def classify(self):
-        X = self.calc_features(self.contexts)  
-        inv_classez = zip(*self.classez) # 2-dim array [n_classes, n_samples]
-        for col in inv_classez:
-            #vector [n_samples] of classification for each sample
-            Y = np.array(col)
-            model = SVC(cache_size = 1000, C = PENALTY, scale_C = True)
-            model.fit(X,Y)
-            self.models.append(model)
+        self.num_classes = len(self.classez[0])
+        X = self.calc_features(self.contexts)
+        # Converts binary classification to an int.
+        # If there are multiple classifications, takes first one.
+        Y = map( lambda c: c.index(1), self.classez) #[n_samples] of classification for each sample
+        self.model = svm.SVC(cache_size = 1000, C = PENALTY, scale_C = True)
+        self.model.fit(X,Y)
         
     #isTest decides whether to use the cv or test data   
     def predict(self, isTest):
-        T = None
-        if isTest:
-            T = self.calc_features(self.test_contexts)
-        else:
-            T = self.calc_features(self.cv_contexts)
-        results = map (lambda model: model.predict(T), self.models)
-        return sum( [list(x) for x in zip(*results)], []) #invert and flatten to 1D array
+        T = self.calc_features( self.test_contexts if isTest else self.cv_contexts )
+        #convert int classification to binary
+        #OK fine, it was easier to not use a map here
+        return [[int(i == j) for i in range(self.num_classes)] for j in self.model.predict(T)]
     
     def get_actual(self, isTest):
-        C = None
-        if isTest:
-            C = self.test_classez
-        else:
-            C = self.cv_classez
+        C = self.test_classez if isTest else self.cv_classez
         return sum( C, [])
         
         
