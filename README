@@ -1,0 +1,10 @@
+Benjamin Jaeger, BGJ9
+Areeb Malik, amm385
+Zach Silversmith, ZBS7
+
+-- Software Requirements --
+Python 2.6
+NLTK http://www.nltk.org/
+scikit .10 http://scikit-learn.org/stable/modules/svm.html
+
+Run "nltk.download()" in Python and install "maxent_treebank_pos_tagger" under "Models"

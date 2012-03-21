@@ -72,8 +72,10 @@ def analyze(predicted, actual):
         elif p == a and a == 0.: tn += 1.
         elif p == 1. and a == 0.: fp += 1.
         else:                   fn += 1.
+    #http://en.wikipedia.org/wiki/Precision_and_recall
     precision = tp / (tp + fp)
     recall = tp / (tp + fn)
+    #http://en.wikipedia.org/wiki/F1_score
     f_measure = 2 * precision * recall / (precision + recall)
     accuracy = (tp + tn) / (tp + tn + fn + fp)
     return f_measure, accuracy
