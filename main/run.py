@@ -2,15 +2,20 @@ train_filename = "../train.txt"
 test_filename = "../test.txt"
 kaggle_filename = "../kaggle.txt"
 
-import re, os
+import re
 from Word import Word
+import features
 # http://inclass.kaggle.com/c/cornell-cs4740-word-sense-disambiguation
+
+FEATURE_FUNS = (features.posNeighbors, ) #add some more
+LIMIT_WORDS = True
+LIMIT = 2000
 
 def parse(filename):
     samples = []
     count = 0
     for line in open(filename):
-        if count > 2000: break
+        if LIMIT_WORDS and count > LIMIT: break
         count +=1
         #find tag, classes, and context in line of file
         data = re.match('^(?P<tag>[a-z]+\.[a-z]) (?P<classes>[01 ]+) @ (?P<context>.+)', line)
@@ -65,7 +70,7 @@ def analyze(predicted, actual):
     for (p,a) in zip(predicted, actual):
         if p == a and a == 1.:   tp += 1.
         elif p == a and a == 0.: tn += 1.
-        elif p != a and a == 1.: fp += 1.
+        elif p == 1. and a == 0.: fp += 1.
         else:                   fn += 1.
     precision = tp / (tp + fp)
     recall = tp / (tp + fn)
@@ -74,9 +79,8 @@ def analyze(predicted, actual):
     return f_measure, accuracy
                
 if __name__ == '__main__':
-    feature_funs = (lambda tag,context: len(context), lambda tag, context: hash(context)/100000000) #some examples
     examples = parse(train_filename)
-    words = buildModels(examples, feature_funs)
+    words = buildModels(examples, FEATURE_FUNS)
     actual, predicted = testModels(words)
     print analyze(predicted, actual)
     
