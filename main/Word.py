@@ -7,6 +7,9 @@ import re
 
 CACHE_SIZE = 1000
 PENALTY = 1 #svm penalty parameter
+STOP_WORDS = ["i","a","about","an","are","as","at","be","by","for","from","how",
+              "in","is","it","of","on","or","that","the","this","to","was","what",
+              "when","where","who","will","with","the"]
 
 '''
 A Word object contains one binary SVM classifying model for each word sense.
@@ -116,7 +119,10 @@ class Word(object):
         self.tokens = {}
         index_count = 0
         for i in range(len(self.classez)):
-            context = word_tokenize(self.clean_string(self.contexts[i]))
+            context = self.remove_stop_words(
+                        word_tokenize(
+                          self.clean_string(
+                            self.contexts[i])))
             _class = self.classez[i]
 
             for word in context:
@@ -130,4 +136,10 @@ class Word(object):
     def clean_string(self,str):
         temp = re.sub('@\S+@', '', str)
         return re.sub("[^a-z0-9A-Z\ ']",'',temp)
+        
+    def remove_stop_words(self,tokens):
+        for word in tokens:
+            if word.lower() in STOP_WORDS:
+                tokens.remove(word)
+        return tokens
                 

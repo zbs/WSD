@@ -42,7 +42,7 @@ def posNeighbors(word, context):
     return features
     
 def cooccurrances(word,context):
-    context_tokens = nl.wordpunct_tokenize(word.clean_string(context))
+    context_tokens = nl.word_tokenize(word.clean_string(context))
     stemmer = nl.stem.porter.PorterStemmer()
     
     features = [0]*len(word.tokens)
