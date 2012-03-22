@@ -1,6 +1,7 @@
 #import numpy as np
 #import scipy as sp
 from sklearn import svm
+from re import match
 
 CACHE_SIZE = 1000
 PENALTY = 1 #svm penalty parameter
@@ -80,8 +81,21 @@ class Word(object):
     def get_actual(self, isTest):
         C = self.test_classez if isTest else self.cv_classez
         return sum( C, [])
-        
-        
+    
+    def get_vocabulary(self):
+        """ 
+            Return a list representing all unique words encountered in all contexts of a given word, 
+            sorted lexicographically
+        """
+        all_words = set()
+        #Get all contexts by concatenating the partitioned groups
+        for context in (self.contexts + self.cv_contexts):
+            for word in context.split(' '):
+                #Ensure only alphabetical words are included in vocabulary
+                if match("^[a-zA-Z]$", word) and word != self.tag:
+                    all_words.add(word)
+        list.sort(all_words)
+        return all_words
         
         
         

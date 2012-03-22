@@ -79,7 +79,13 @@ def analyze(predicted, actual):
     f_measure = 2 * precision * recall / (precision + recall)
     accuracy = (tp + tn) / (tp + tn + fn + fp)
     return f_measure, accuracy
-               
+
+def get_word(words, tag):
+    for word in words:
+        if word.tag == tag:
+            return word
+    return None
+
 if __name__ == '__main__':
     examples = parse(train_filename)
     words = buildModels(examples, FEATURE_FUNS)
