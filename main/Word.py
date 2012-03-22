@@ -92,6 +92,21 @@ class Word(object):
     def get_actual(self, isTest):
         C = self.test_classez if isTest else self.cv_classez
         return sum( C, [])
+    
+    def get_vocabulary(self):
+        """ 
+            Return a list representing all unique words encountered in all contexts of a given word, 
+            sorted lexicographically
+        """
+        all_words = set()
+        #Get all contexts by concatenating the partitioned groups
+        for context in (self.contexts + self.cv_contexts):
+            for word in context.split(' '):
+                #Don't include target word
+                if word != "@"+self.tag+"@":
+                    all_words.add(word)
+        list.sort(all_words)
+        return all_words
         
     # builds dictionary of all tokens in all contexts
     #   key: token (root form, lowercase)
@@ -118,7 +133,3 @@ class Word(object):
     def remove_keyword(self,str):
         return re.sub('@\S+@', '', str)
                 
-
-
-
-
