@@ -59,8 +59,9 @@ def testModels(words, tests = None):
     predicted = sum (map(lambda word: word.predict(isTest), words), []) # map and flatten
     if isTest:
         kaggle_file = open(kaggle_filename, 'w+')
-        kaggle_file.write("\n".join(str(predicted)))
-        return predicted
+        map(lambda p: kaggle_file.write(str(p)+'\n'), predicted)
+        kaggle_file.close();
+        return [], predicted
     actual = sum( map(lambda word: word.get_actual(isTest), words), [])
     return actual, predicted
 

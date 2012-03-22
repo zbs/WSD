@@ -78,6 +78,8 @@ class Word(object):
         #linear multiclass svm
         self.model = svm.LinearSVC( C = PENALTY, multi_class = True, scale_C = True)
         self.model.fit(X,Y)
+        #garbage collect
+        self.classez = self.contexts = None
         
     #isTest decides whether to use the cv or test data   
     def predict(self, isTest):
