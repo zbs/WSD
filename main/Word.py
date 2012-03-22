@@ -36,6 +36,12 @@ class Word(object):
             self.contexts.append(context)
             self.classez.append(classes)
     
+    #Calls all the subroutines necessary after Word object populated with samples
+    def setup(self):
+        self.splitCV(.10)
+        self.classify()
+        self.build_context_list()
+        
     #split up the train data by word for cross-validation
     #we could make this more advanced
     def splitCV(self, percent):

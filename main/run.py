@@ -41,8 +41,7 @@ def buildModels(examples, feature_funs):
             words.append( Word(curr_tag, feature_funs) )
         words[-1].add_sample( classes, context)
         
-    map(lambda word: word.splitCV(.10), words)
-    map(lambda word: word.classify(), words)
+    map(lambda word: word.setup(), words)
     return words
 
 #If using test data, then set the "tests" variable. Otherwise cv data is used
@@ -81,7 +80,7 @@ def analyze(predicted, actual):
     return f_measure, accuracy
                
 if __name__ == '__main__':
-'''
+    '''
     bass = Word('bass.v',())
     bass.add_sample([1,0],"I went @bass@ fishing")
     bass.add_sample([0,1],"I am playing @bass@ ball")
@@ -90,7 +89,7 @@ if __name__ == '__main__':
 	    print (t,bass.tokens[t])
     f = features.cooccurrances(bass,"I were playing @bass@ fish")
     print f
-'''
+    '''
     examples = parse(train_filename)
     words = buildModels(examples, FEATURE_FUNS)
     actual, predicted = testModels(words)
