@@ -1,7 +1,7 @@
 #import numpy as np
 #import scipy as sp
 from sklearn import svm
-from nltk import wordpunct_tokenize
+from nltk import word_tokenize
 from nltk.stem.porter import *
 import re
 
@@ -116,7 +116,7 @@ class Word(object):
         self.tokens = {}
         index_count = 0
         for i in range(len(self.classez)):
-            context = wordpunct_tokenize(self.remove_keyword(self.contexts[i]))
+            context = word_tokenize(self.clean_string(self.contexts[i]))
             _class = self.classez[i]
 
             for word in context:
@@ -127,6 +127,7 @@ class Word(object):
                     
     #removes @word@ from context
     #takes in a tokenized string, not the string itself..
-    def remove_keyword(self,str):
-        return re.sub('@\S+@', '', str)
+    def clean_string(self,str):
+        temp = re.sub('@\S+@', '', str)
+        return re.sub("[^a-z0-9A-Z\ ']",'',temp)
                 
