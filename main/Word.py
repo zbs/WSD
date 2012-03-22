@@ -100,8 +100,8 @@ class Word(object):
         #Get all contexts by concatenating the partitioned groups
         for context in (self.contexts + self.cv_contexts):
             for word in context.split(' '):
-                #Ensure only alphabetical words are included in vocabulary
-                if re.match("^[a-zA-Z]$", word):
+                #Don't include target word
+                if word != "@"+self.tag+"@":
                     all_words.add(word)
         list.sort(all_words)
         return all_words
