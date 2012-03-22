@@ -39,3 +39,22 @@ def posNeighbors(word, context):
         #turn on the corresponding feature for the pos of each neighbors
         features[ NUM_POS_TYPES*i + POS_TYPES[ pos[i][1] ] ] = 1
     return features
+    
+def cooccurrances(word,context):
+    context_tokens = word.remove_keyword(nl.wordpunct_tokenize(context))
+    trained_tokens = []
+    stemmer = nl.stem.porter.PorterStemmer()
+    
+    #create list out of dictionary for output
+    for i in word.tokens:
+        trained_tokens.append(i)
+    features = [0]*len(trained_tokens)
+    
+    #if context_token has been seen before, increment the associated counter
+    for i in context_tokens:
+        root = (stemmer.stem(i)).lower()
+        if root in word.tokens:
+            index = trained_tokens.index(root)
+            features[index] += 1
+    return features
+    

@@ -1,6 +1,8 @@
 #import numpy as np
 #import scipy as sp
 from sklearn import svm
+from nltk import wordpunct_tokenize
+from nltk.stem.porter import *
 
 CACHE_SIZE = 1000
 PENALTY = 1 #svm penalty parameter
@@ -19,6 +21,7 @@ class Word(object):
     test_contexts = []
     test_classez = []
     model = None
+    tokens = None
     
     def __init__(self, tag, feature_funs):
         self.tag = tag
@@ -81,7 +84,39 @@ class Word(object):
         C = self.test_classez if isTest else self.cv_classez
         return sum( C, [])
         
-        
-        
-        
-        
+    # builds dictionary of all tokens in all contexts
+    #   key: token (root form, lowercase)
+    #   value: list of occurances per class
+    #   i.e.: {'fish':[3,0,1,1,0]}
+    def build_context_list(self):
+        stemmer = PorterStemmer()
+        self.tokens = {}
+        for i in range(len(self.classez)):
+            context = wordpunct_tokenize(self.contexts[i])
+            _class = self.classez[i]
+
+            context = self.remove_keyword(context)
+
+            for word in context:
+                root = (stemmer.stem(word)).lower()
+                if root in self.tokens:
+                    # combines current class vector with that in store in the dictionary
+                    # {'fish':[1,0,0]} + [0,1,0] -> {'fish':[1,1,0]}
+                    self.tokens[root] = map(lambda x,y: x+y,self.tokens[root],_class)
+                else:
+                    self.tokens[root] = _class
+                    
+    #removes @word@ from context
+    def remove_keyword(self,lst):
+        if '@' in lst:
+            signal = lst.index('@')
+            if signal < len(lst) - 2 and lst[signal + 2] == '@':
+                return lst[:signal] + lst[signal+3:]
+        else:
+            return lst
+                    
+                
+
+
+
+

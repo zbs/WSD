@@ -79,10 +79,20 @@ def analyze(predicted, actual):
     return f_measure, accuracy
                
 if __name__ == '__main__':
+'''
+    bass = Word('bass.v',())
+    bass.add_sample([1,0],"I went @bass@ fishing")
+    bass.add_sample([0,1],"I am playing @bass@ ball")
+    bass.build_context_list()
+    for t in bass.tokens:
+	    print (t,bass.tokens[t])
+    f = features.cooccurrances(bass,"I were playing @bass@ fish")
+    print f
+'''
     examples = parse(train_filename)
     words = buildModels(examples, FEATURE_FUNS)
     actual, predicted = testModels(words)
     print analyze(predicted, actual)
-    
+   
 
     
