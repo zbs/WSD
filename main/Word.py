@@ -1,7 +1,9 @@
 #import numpy as np
 #import scipy as sp
 from sklearn import svm
-from re import match
+from nltk import wordpunct_tokenize
+from nltk.stem.porter import *
+import re
 
 CACHE_SIZE = 1000
 PENALTY = 1 #svm penalty parameter
@@ -20,6 +22,7 @@ class Word(object):
     test_contexts = []
     test_classez = []
     model = None
+    tokens = None
     
     def __init__(self, tag, feature_funs):
         self.tag = tag
@@ -34,6 +37,12 @@ class Word(object):
             self.contexts.append(context)
             self.classez.append(classes)
     
+    #Calls all the subroutines necessary after Word object populated with samples
+    def setup(self):
+        self.splitCV(.10)
+        self.classify()
+        self.build_context_list()
+        
     #split up the train data by word for cross-validation
     #we could make this more advanced
     def splitCV(self, percent):
@@ -92,10 +101,33 @@ class Word(object):
         for context in (self.contexts + self.cv_contexts):
             for word in context.split(' '):
                 #Ensure only alphabetical words are included in vocabulary
-                if match("^[a-zA-Z]$", word) and word != self.tag:
+                if re.match("^[a-zA-Z]$", word):
                     all_words.add(word)
         list.sort(all_words)
         return all_words
         
-        
-        
+    # builds dictionary of all tokens in all contexts
+    #   key: token (root form, lowercase)
+    #   value: list of occurances per class
+    #   i.e.: {'fish':[3,0,1,1,0]}
+    def build_context_list(self):
+        stemmer = PorterStemmer()
+        self.tokens = {}
+        for i in range(len(self.classez)):
+            context = wordpunct_tokenize(self.remove_keyword(self.contexts[i]))
+            _class = self.classez[i]
+
+            for word in context:
+                root = (stemmer.stem(word)).lower()
+                if root in self.tokens:
+                    # combines current class vector with that in store in the dictionary
+                    # {'fish':[1,0,0]} + [0,1,0] -> {'fish':[1,1,0]}
+                    self.tokens[root] = map(lambda x,y: x+y,self.tokens[root],_class)
+                else:
+                    self.tokens[root] = _class
+                    
+    #removes @word@ from context
+    #takes in a tokenized string, not the string itself..
+    def remove_keyword(self,str):
+        return re.sub('@\S+@', '', str)
+                
