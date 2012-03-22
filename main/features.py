@@ -41,7 +41,7 @@ def posNeighbors(word, context):
     return features
     
 def cooccurrances(word,context):
-    context_tokens = word.remove_keyword(nl.wordpunct_tokenize(context))
+    context_tokens = nl.wordpunct_tokenize(word.remove_keyword(context))
     trained_tokens = []
     stemmer = nl.stem.porter.PorterStemmer()
     
