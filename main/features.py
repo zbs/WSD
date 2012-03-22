@@ -8,7 +8,8 @@ import nltk as nl
 
 POS_TYPES = { 'CC':0, 'CD':1, 'DT':2, 'EX':3, 'FW':4, 'IN':5, 'JJ':6, 'JJR':7, 'JJS':8, 'LS':9, 'MD':10, 'NN':11, 'NNS':12, 'NNP':13,
               'NNPS':14, 'PDT':15, 'POS':16, 'PRP':17, 'PRP$':18, 'RB':19, 'RBR':20, 'RBS':21, 'RP':22, 'SYM':23, 'TO':24, 'UH':25,
-              'VB':26, 'VBD':27, 'VBG':28, 'VBN':29, 'VBP':30, 'VBZ':31, 'WDT':32, 'WP':33, 'WP$':34, 'WRB':35, ',':36, ':':36, '``':36, '-NONE-':37 }
+              'VB':26, 'VBD':27, 'VBG':28, 'VBN':29, 'VBP':30, 'VBZ':31, 'WDT':32, 'WP':33, 'WP$':34, 'WRB':35, ',':36, ':':36, '``':36, 
+              "''":36, '-NONE-':37 }
 NUM_POS_TYPES = 38
 
 def posNeighbors(word, context):
@@ -18,12 +19,12 @@ def posNeighbors(word, context):
     right = re.split( '[?!\.]', result.group('right'))[0]
     left =left.replace('@', '') # '@bank@ to @bank@' would otherwise cause error
     right = right.replace('@', '')
+    if len(left) >3 : left = left[-3:] # tokenizer splits "cannot" => "can" not"
+    if len(right) > 3 : right = right[:3] 
+    right = re.sub("'s", " 's", right)
     target = result.group('target')
     left_tokens = nl.word_tokenize(left)
     right_tokens = nl.word_tokenize(right)
-    #'cannot' is tokenized as ['can', 'not'], which is annoying
-    if 'not' in left_tokens: left_tokens.remove('not')
-    if 'not' in right_tokens: right_tokens.remove('not')
     #tokenize left, target, and right together
     pos = nl.pos_tag( left_tokens + [target] + right_tokens) #Uses Penn Treebank with 36+ POS 
     #Add '-NONE-' tags to pos if there are less than 3 left or right neighbors

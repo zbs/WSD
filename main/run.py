@@ -8,7 +8,7 @@ import features
 # http://inclass.kaggle.com/c/cornell-cs4740-word-sense-disambiguation
 
 FEATURE_FUNS = (features.posNeighbors, ) #add some more
-LIMIT_WORDS = True
+LIMIT_WORDS = False
 LIMIT = 2000
 
 def parse(filename):
@@ -59,7 +59,7 @@ def testModels(words, tests = None):
     predicted = sum (map(lambda word: word.predict(isTest), words), []) # map and flatten
     if isTest:
         kaggle_file = open(kaggle_filename, 'w+')
-        kaggle_file.write("\n".join(predicted))
+        kaggle_file.write("\n".join(str(predicted)))
         return predicted
     actual = sum( map(lambda word: word.get_actual(isTest), words), [])
     return actual, predicted
@@ -91,8 +91,9 @@ if __name__ == '__main__':
     print f
     '''
     examples = parse(train_filename)
+    test_samples = parse(test_filename)
     words = buildModels(examples, FEATURE_FUNS)
-    actual, predicted = testModels(words)
+    actual, predicted = testModels(words, tests = test_samples)
     print analyze(predicted, actual)
    
 

@@ -31,7 +31,7 @@ class Word(object):
     #isTest determines whether the data is train or test.   
     def add_sample(self, classes, context, isTest = False):
         if isTest:
-            self.test_context.append(context)
+            self.test_contexts.append(context)
             self.test_classez.append(classes)
         else:
             self.contexts.append(context)
@@ -41,7 +41,7 @@ class Word(object):
     def setup(self):
         self.splitCV(.10)
         self.classify()
-        self.build_context_list()
+        #self.build_context_list()
         
     #split up the train data by word for cross-validation
     #we could make this more advanced
