@@ -110,23 +110,20 @@ class Word(object):
         
     # builds dictionary of all tokens in all contexts
     #   key: token (root form, lowercase)
-    #   value: list of occurances per class
-    #   i.e.: {'fish':[3,0,1,1,0]}
+    #   value: index for converting to list
     def build_context_list(self):
         stemmer = PorterStemmer()
         self.tokens = {}
+        index_count = 0
         for i in range(len(self.classez)):
             context = wordpunct_tokenize(self.remove_keyword(self.contexts[i]))
             _class = self.classez[i]
 
             for word in context:
                 root = (stemmer.stem(word)).lower()
-                if root in self.tokens:
-                    # combines current class vector with that in store in the dictionary
-                    # {'fish':[1,0,0]} + [0,1,0] -> {'fish':[1,1,0]}
-                    self.tokens[root] = map(lambda x,y: x+y,self.tokens[root],_class)
-                else:
-                    self.tokens[root] = _class
+                if root not in self.tokens:
+                    self.tokens[root] = index_count
+                    index_count += 1
                     
     #removes @word@ from context
     #takes in a tokenized string, not the string itself..
