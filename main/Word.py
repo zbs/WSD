@@ -1,12 +1,15 @@
 #import numpy as np
 #import scipy as sp
 from sklearn import svm
-from nltk import wordpunct_tokenize
+from nltk import word_tokenize
 from nltk.stem.porter import *
 import re
 
 CACHE_SIZE = 1000
 PENALTY = .1 #svm penalty parameter
+STOP_WORDS = ["i","a","about","an","are","as","at","be","by","for","from","how",
+              "in","is","it","of","on","or","that","the","this","to","was","what",
+              "when","where","who","will","with","the"]
 
 '''
 A Word object contains one binary SVM classifying model for each word sense.
@@ -109,26 +112,33 @@ class Word(object):
         
     # builds dictionary of all tokens in all contexts
     #   key: token (root form, lowercase)
-    #   value: list of occurances per class
-    #   i.e.: {'fish':[3,0,1,1,0]}
+    #   value: index for converting to list
     def build_context_list(self):
         stemmer = PorterStemmer()
         self.tokens = {}
+        index_count = 0
         for i in range(len(self.classez)):
-            context = wordpunct_tokenize(self.remove_keyword(self.contexts[i]))
+            context = self.remove_stop_words(
+                        word_tokenize(
+                          self.clean_string(
+                            self.contexts[i])))
             _class = self.classez[i]
 
             for word in context:
                 root = (stemmer.stem(word)).lower()
-                if root in self.tokens:
-                    # combines current class vector with that in store in the dictionary
-                    # {'fish':[1,0,0]} + [0,1,0] -> {'fish':[1,1,0]}
-                    self.tokens[root] = map(lambda x,y: x+y,self.tokens[root],_class)
-                else:
-                    self.tokens[root] = _class
+                if root not in self.tokens:
+                    self.tokens[root] = index_count
+                    index_count += 1
                     
     #removes @word@ from context
     #takes in a tokenized string, not the string itself..
-    def remove_keyword(self,str):
-        return re.sub('@\S+@', '', str)
+    def clean_string(self,str):
+        temp = re.sub('@\S+@', '', str)
+        return re.sub("[^a-z0-9A-Z\ ']",'',temp)
+        
+    def remove_stop_words(self,tokens):
+        for word in tokens:
+            if word.lower() in STOP_WORDS:
+                tokens.remove(word)
+        return tokens
                 
