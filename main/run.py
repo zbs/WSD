@@ -4,8 +4,9 @@ kaggle_filename = "../kaggle.txt"
 
 train_pickle = "train_pickle.txt"
 test_pickle = "test_pickle.txt"
+pos_tag_pickle  ="pos_tag_pickle.txt"
 
-import re, pickle, os
+import re, cPickle, os, cProfile
 from nltk import word_tokenize
 from nltk.stem.porter import PorterStemmer
 from Word import Word
@@ -13,17 +14,18 @@ import features
 # http://inclass.kaggle.com/c/cornell-cs4740-word-sense-disambiguation
 
 FEATURE_FUNS = (features.posNeighbors, ) #add some more
-LIMIT_WORDS = True #true to test and/or train with limited # words
-LIMIT = 2
-PICKLE_FILES = False #set to True to reparse data files
-TEST = False #true to run test set and write kaggle file
+LIMIT_WORDS = False #true to test and/or train with limited # words
+LIMIT = 3
+REPICKLE_FILES = False #set to True to reparse data files
+REPICKLE_POS_TAGS = False #set to True to reset pos-tags
+TEST = True #true to run test set and write kaggle file
 # the percent of words that is put in the stop_word list
 STOP_WORD_PERCENT = 0.1
 
 
 def parse(filename, pickle_file):
-    if not PICKLE_FILES and os.path.isfile(pickle_file):
-        return pickle.load(open(pickle_file, 'rb')) 
+    if not REPICKLE_FILES and os.path.isfile(pickle_file):
+        return cPickle.load(open(pickle_file, 'rb')) 
     samples = []
     for line in open(filename):
         #find tag, classes, and context in line of file
@@ -34,7 +36,7 @@ def parse(filename, pickle_file):
         context = data.group('context')
         samples.append( (tag, classes, context) )
         #print lines[-1]
-    pickle.dump(samples, open(pickle_file, 'wb'))
+    cPickle.dump(samples, open(pickle_file, 'wb'))
     return samples
 
 def buildModels(examples, feature_funs):
@@ -142,6 +144,24 @@ def get_stop_words(examples):
 def clean_string(str):
     temp = re.sub('@\S+@', '', str)
     return re.sub("[^a-z0-9A-Z\ ']",'',temp)
+
+def main():
+    #load pos_tag pickle file if it exists
+    if os.path.isfile(pos_tag_pickle) and not REPICKLE_POS_TAGS:
+        features.pos_tags = cPickle.load(open(pos_tag_pickle, 'rb'))
+        
+    examples = parse(train_filename, train_pickle)
+    words = buildModels(examples, FEATURE_FUNS)
+    if TEST:
+        test_samples = parse(test_filename, test_pickle)
+        predicted = testModels(words, tests = test_samples)
+    else:
+        actual, predicted = testModels(words)
+        print analyze(predicted, actual)
+        
+    if features.pos_tags_changed:
+        cPickle.dump(features.pos_tags, open(pos_tag_pickle, 'wb'))
+        
 if __name__ == '__main__':
     '''
     lst = []
@@ -153,14 +173,6 @@ if __name__ == '__main__':
     
     '''
     #look at run options at top of file.
-    examples = parse(train_filename, train_pickle)
-    words = buildModels(examples, FEATURE_FUNS)
-    if TEST:
-        test_samples = parse(test_filename, test_pickle)
-        actual, predicted = testModels(words, tests = test_samples)
-    else:
-        actual, predicted = testModels(words)
-        print analyze(predicted, actual)
-   
-
+    #cProfile.run('main()')
+    main()
     

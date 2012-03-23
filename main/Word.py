@@ -67,7 +67,7 @@ class Word(object):
         return zip(*normalized)  # 2-dim array [n_samples, n_features]
         '''
         #For each context - concatenates the vectors from each feature function.
-        return [ sum ( [f(self, c) for f in self.feature_funs], [] ) for c in contexts] #[n_samples, n_features]
+        return [ sum ( (f(self, c) for f in self.feature_funs), [] ) for c in contexts] #[n_samples, n_features]
             
     def classify(self):
         self.num_classes = len(self.classez[0])
@@ -89,7 +89,7 @@ class Word(object):
         #convert int classification to binary
         #OK fine, it was easier to not use a map here
         predictions = self.model.predict(T)
-        return sum([[int(i == j) for i in range(self.num_classes)] for j in predictions], [])
+        return [int(i == j) for i in range(self.num_classes) for j in predictions]
     
     def get_actual(self, isTest):
         C = self.test_classez if isTest else self.cv_classez
