@@ -19,12 +19,11 @@ def posNeighbors(word, context):
     right = re.split( '[?!\.]', result.group('right'))[0]
     left =left.replace('@', '') # '@bank@ to @bank@' would otherwise cause error
     right = right.replace('@', '')
-    if len(left) >3 : left = left[-3:] # tokenizer splits "cannot" => "can" not"
-    if len(right) > 3 : right = right[:3] 
-    right = re.sub("'s", " 's", right)
     target = result.group('target')
     left_tokens = nl.word_tokenize(left)
     right_tokens = nl.word_tokenize(right)
+    if len(left_tokens) >3 : left_tokens = left_tokens[-3:] # tokenizer splits "cannot" => "can" not"
+    if len(right_tokens) > 3 : right_tokens = right_tokens[:3] 
     #tokenize left, target, and right together
     pos = nl.pos_tag( left_tokens + [target] + right_tokens) #Uses Penn Treebank with 36+ POS 
     #Add '-NONE-' tags to pos if there are less than 3 left or right neighbors
@@ -33,6 +32,7 @@ def posNeighbors(word, context):
     for i in range(3 - len(right_tokens)):
         pos.append( ('', '-NONE-'))
     pos.pop(3) #remove the target word
+    #print pos
     if (len(pos) != 6):
         print "len(pos)!=6 in in posNeighbors, figure out what went wrong"
     features = [ 0 for _ in range( NUM_POS_TYPES*len(pos) ) ] #binary feature vector - 36+ POS for each neighbor

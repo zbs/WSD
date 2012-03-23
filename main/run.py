@@ -8,15 +8,12 @@ import features
 # http://inclass.kaggle.com/c/cornell-cs4740-word-sense-disambiguation
 
 FEATURE_FUNS = (features.posNeighbors, ) #add some more
-LIMIT_WORDS = False
-LIMIT = 2000
+LIMIT_WORDS = True
+LIMIT = 2
 
 def parse(filename):
     samples = []
-    count = 0
     for line in open(filename):
-        if LIMIT_WORDS and count > LIMIT: break
-        count +=1
         #find tag, classes, and context in line of file
         data = re.match('^(?P<tag>[a-z]+\.[a-z]) (?P<classes>[01 ]+) @ (?P<context>.+)', line)
         tag = data.group('tag')
@@ -37,6 +34,7 @@ def buildModels(examples, feature_funs):
         next_tag, classes, context = sample
         #when sample has a previously unseen tag
         if curr_tag != next_tag:
+            if LIMIT_WORDS and len(words) >= LIMIT: break;
             curr_tag = next_tag
             words.append( Word(curr_tag, feature_funs) )
         words[-1].add_sample( classes, context)
@@ -54,8 +52,10 @@ def testModels(words, tests = None):
             next_tag, classes, context = test
             if curr_tag != next_tag:
                 word_ptr += 1
+                if LIMIT_WORDS and word_ptr >= LIMIT:
+                    break
                 curr_tag = next_tag
-                words[word_ptr].add_sample(classes, context, isTest = True)
+            words[word_ptr].add_sample(classes, context, isTest = True)
     predicted = sum (map(lambda word: word.predict(isTest), words), []) # map and flatten
     if isTest:
         kaggle_file = open(kaggle_filename, 'w+')

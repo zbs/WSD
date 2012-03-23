@@ -6,27 +6,25 @@ from nltk.stem.porter import *
 import re
 
 CACHE_SIZE = 1000
-PENALTY = 1 #svm penalty parameter
+PENALTY = .1 #svm penalty parameter
 
 '''
 A Word object contains one binary SVM classifying model for each word sense.
 '''
 class Word(object):
-    tag = None
-    feature_funs = None
-    classez = [] # [n_samples, n_classes], "z" stands for the plural of classes
-    contexts = []
-    cv_contexts = None
-    cv_classez = None
-    num_classes = None
-    test_contexts = []
-    test_classez = []
-    model = None
-    tokens = None
     
     def __init__(self, tag, feature_funs):
         self.tag = tag
         self.feature_funs = feature_funs
+        self.classez = [] # [n_samples, n_classes], "z" stands for the plural of classes
+        self.contexts = []
+        self.cv_contexts = None
+        self.cv_classez = None
+        self.num_classes = None
+        self.test_contexts = []
+        self.test_classez = []
+        self.model = None
+        self.tokens = None
     
     #isTest determines whether the data is train or test.   
     def add_sample(self, classes, context, isTest = False):
@@ -66,7 +64,7 @@ class Word(object):
         return zip(*normalized)  # 2-dim array [n_samples, n_features]
         '''
         #For each context - concatenates the vectors from each feature function.
-        return [ sum ( [f(self, c) for f in self.feature_funs], [] ) for c in contexts] #[n_features, n_samples]
+        return [ sum ( [f(self, c) for f in self.feature_funs], [] ) for c in contexts] #[n_samples, n_features]
             
     def classify(self):
         self.num_classes = len(self.classez[0])
@@ -77,6 +75,7 @@ class Word(object):
         if(len(X) != len(Y)): print "X and Y different lengths in classify()"
         #linear multiclass svm
         self.model = svm.LinearSVC( C = PENALTY, multi_class = True, scale_C = True)
+        #self.model = svm.SVC( C = PENALTY, scale_C = True)
         self.model.fit(X,Y)
         #garbage collect
         self.classez = self.contexts = None
