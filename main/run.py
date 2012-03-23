@@ -3,6 +3,8 @@ test_filename = "../test.txt"
 kaggle_filename = "../kaggle.txt"
 
 import re
+from nltk import word_tokenize
+from nltk.stem.porter import PorterStemmer
 from Word import Word
 import features
 # http://inclass.kaggle.com/c/cornell-cs4740-word-sense-disambiguation
@@ -10,6 +12,9 @@ import features
 FEATURE_FUNS = (features.posNeighbors, ) #add some more
 LIMIT_WORDS = True
 LIMIT = 2
+# the percent of words that is put in the stop_word list
+STOP_WORD_PERCENT = 0.1
+
 
 def parse(filename):
     samples = []
@@ -85,17 +90,59 @@ def get_word(words, tag):
         if word.tag == tag:
             return word
     return None
+    
+def get_stop_words(examples):
+    # key: word
+    # value: number of times seen
+    count_dict = {}
+    
+    # key: integer {1,2...}
+    # value: words that have been seen this many times
+    words_by_count = {1:[]}
+    
+    stemmer = PorterStemmer()
+    word_count = 0
+    top_words = []
+    # generate word counts and words per count
+    for (_,_,context) in examples:
+        tokens = word_tokenize(clean_string(context))
+        for word in tokens:
+            word_count += 1
+            word = stemmer.stem(word)
+            if word not in count_dict:
+                count_dict[word] = 1
+                words_by_count[1].append(word)
+            else:
+                i = count_dict[word]
+                words_by_count[i].remove(word)
+                if i+1 not in words_by_count:
+                    words_by_count[i+1] = []
+                words_by_count[i+1].append(word)
+                count_dict[word] += 1
+    
+    stop_list_count = int(word_count * STOP_WORD_PERCENT)
+    print stop_list_count
+    while stop_list_count > 0:
+        max = len(words_by_count)
+        if not words_by_count[max]:
+            del words_by_count[max]
+        else:
+            top_words.append(words_by_count[max].pop())
+            stop_list_count -= 1
+    return top_words
 
+def clean_string(str):
+    temp = re.sub('@\S+@', '', str)
+    return re.sub("[^a-z0-9A-Z\ ']",'',temp)
 if __name__ == '__main__':
     '''
-    bass = Word('bass.v',())
-    bass.add_sample([1,0],"I went @bass@ fishing")
-    bass.add_sample([0,1],"I am playing @bass@ ball")
-    bass.build_context_list()
-    for t in bass.tokens:
-	    print (t,bass.tokens[t])
-    f = features.cooccurrances(bass,"I were playing @bass@ fish")
-    print f
+    lst = []
+    lst.append((1,[1,0],"I went @bass@ fishing"))
+    lst.append((1,[0,1],"I am playing @bass@ ball"))
+    lst.append((1,[0,1],"I fish for @bass@ fish"))
+    counts = get_stop_words(lst)
+    print counts
+    
     '''
     examples = parse(train_filename)
     test_samples = parse(test_filename)
