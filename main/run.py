@@ -13,7 +13,7 @@ from Word import Word
 import features
 # http://inclass.kaggle.com/c/cornell-cs4740-word-sense-disambiguation
 
-FEATURE_FUNS = (features.posNeighbors, ) #add some more
+FEATURE_FUNS = (features.pos_tags, features.cooccurrances,) #add some more
 LIMIT_WORDS = False #true to test and/or train with limited # words
 
 LIMIT = 3
@@ -79,6 +79,7 @@ def testModels(words, tests = None):
         kaggle_file.close();
         return predicted
     actual = sum( map(lambda word: word.get_actual(isTest), words), [])
+    if len(actual) != len(predicted): print "actual and predicted different length"
     return actual, predicted
 
 def analyze(predicted, actual):
@@ -162,6 +163,7 @@ def main():
         
     if features.pos_tags_changed:
         cPickle.dump(features.pos_tags, open(pos_tag_pickle, 'wb'))
+    print "Done!"
         
 if __name__ == '__main__':
     '''

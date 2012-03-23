@@ -41,8 +41,10 @@ class Word(object):
     #Calls all the subroutines necessary after Word object populated with samples
     def setup(self):
         self.splitCV(.10)
+        self.build_context_list()
         self.classify()
-        #self.build_context_list()
+        #garbage collect
+        self.classez = self.contexts = None
         
     #split up the train data by word for cross-validation
     #we could make this more advanced
@@ -67,7 +69,7 @@ class Word(object):
         return zip(*normalized)  # 2-dim array [n_samples, n_features]
         '''
         #For each context - concatenates the vectors from each feature function.
-        return [ sum ( (f(self, c) for f in self.feature_funs), [] ) for c in contexts] #[n_samples, n_features]
+        return [ sum ( [f(self, c) for f in self.feature_funs], [] ) for c in contexts] #[n_samples, n_features]
             
     def classify(self):
         self.num_classes = len(self.classez[0])
@@ -80,8 +82,7 @@ class Word(object):
         self.model = svm.LinearSVC( C = PENALTY, multi_class = True, scale_C = True)
         #self.model = svm.SVC( C = PENALTY, scale_C = True)
         self.model.fit(X,Y)
-        #garbage collect
-        self.classez = self.contexts = None
+        
         
     #isTest decides whether to use the cv or test data   
     def predict(self, isTest):
@@ -89,7 +90,7 @@ class Word(object):
         #convert int classification to binary
         #OK fine, it was easier to not use a map here
         predictions = self.model.predict(T)
-        return [int(i == j) for i in range(self.num_classes) for j in predictions]
+        return sum([[int(i == j) for i in range(self.num_classes)] for j in predictions], [])
     
     def get_actual(self, isTest):
         C = self.test_classez if isTest else self.cv_classez
