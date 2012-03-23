@@ -15,6 +15,7 @@ import features
 
 FEATURE_FUNS = (features.posNeighbors, ) #add some more
 LIMIT_WORDS = False #true to test and/or train with limited # words
+
 LIMIT = 3
 REPICKLE_FILES = False #set to True to reparse data files
 REPICKLE_POS_TAGS = False #set to True to reset pos-tags
