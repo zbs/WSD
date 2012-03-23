@@ -2,16 +2,23 @@ train_filename = "../train.txt"
 test_filename = "../test.txt"
 kaggle_filename = "../kaggle.txt"
 
-import re
+train_pickle = "train_pickle.txt"
+test_pickle = "test_pickle.txt"
+
+import re, pickle, os
 from Word import Word
 import features
 # http://inclass.kaggle.com/c/cornell-cs4740-word-sense-disambiguation
 
 FEATURE_FUNS = (features.posNeighbors, ) #add some more
-LIMIT_WORDS = True
+LIMIT_WORDS = True #true to test and/or train with limited # words
 LIMIT = 2
+PICKLE_FILES = False #set to True to reparse data files
+TEST = False #true to run test set and write kaggle file
 
-def parse(filename):
+def parse(filename, pickle_file):
+    if not PICKLE_FILES and os.path.isfile(pickle_file):
+        return pickle.load(open(pickle_file, 'rb')) 
     samples = []
     for line in open(filename):
         #find tag, classes, and context in line of file
@@ -22,6 +29,7 @@ def parse(filename):
         context = data.group('context')
         samples.append( (tag, classes, context) )
         #print lines[-1]
+    pickle.dump(samples, open(pickle_file, 'wb'))
     return samples
 
 def buildModels(examples, feature_funs):
@@ -61,7 +69,7 @@ def testModels(words, tests = None):
         kaggle_file = open(kaggle_filename, 'w+')
         map(lambda p: kaggle_file.write(str(p)+'\n'), predicted)
         kaggle_file.close();
-        return [], predicted
+        return predicted
     actual = sum( map(lambda word: word.get_actual(isTest), words), [])
     return actual, predicted
 
@@ -97,11 +105,15 @@ if __name__ == '__main__':
     f = features.cooccurrances(bass,"I were playing @bass@ fish")
     print f
     '''
-    examples = parse(train_filename)
-    test_samples = parse(test_filename)
+    #look at run options at top of file.
+    examples = parse(train_filename, train_pickle)
     words = buildModels(examples, FEATURE_FUNS)
-    actual, predicted = testModels(words, tests = test_samples)
-    print analyze(predicted, actual)
+    if TEST:
+        test_samples = parse(test_filename, test_pickle)
+        actual, predicted = testModels(words, tests = test_samples)
+    else:
+        actual, predicted = testModels(words)
+        print analyze(predicted, actual)
    
 
     

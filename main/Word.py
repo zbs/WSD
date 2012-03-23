@@ -3,7 +3,7 @@
 from sklearn import svm
 from nltk import word_tokenize
 from nltk.stem.porter import *
-import re
+import re, heapq
 
 CACHE_SIZE = 1000
 PENALTY = .1 #svm penalty parameter
