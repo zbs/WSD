@@ -13,7 +13,7 @@ import features
 # http://inclass.kaggle.com/c/cornell-cs4740-word-sense-disambiguation
 
 FEATURE_FUNS = (features.posNeighbors, ) #add some more
-LIMIT_WORDS = True #true to test and/or train with limited # words
+LIMIT_WORDS = False #true to test and/or train with limited # words
 LIMIT = 2
 PICKLE_FILES = False #set to True to reparse data files
 TEST = False #true to run test set and write kaggle file
