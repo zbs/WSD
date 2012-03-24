@@ -65,4 +65,4 @@ def cooccurrances(word,context):
     return features
     
 def collocations(word, context):
-    return Collocation.get_collocation_vector(context, word.tag, word)
+    return Collocation.get_vector(context, word)

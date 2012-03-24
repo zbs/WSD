@@ -1,13 +1,12 @@
 #import numpy as np
 #import scipy as sp
-from sklearn import svm
 from nltk import word_tokenize
+from sklearn import svm
 from nltk.stem.porter import *
 import re, heapq
 import Collocation
 
-CACHE_SIZE = 1000
-PENALTY = .1 #svm penalty parameter
+PENALTY = 2 #svm penalty parameter
 STOP_WORDS = ["i","a","about","an","are","as","at","be","by","for","from","how",
               "in","is","it","of","on","or","that","the","this","to","was","what",
               "when","where","who","will","with","the"]
@@ -106,7 +105,7 @@ class Word(object):
         """
         all_words = set()
         #Get all contexts by concatenating the partitioned groups
-        for context in (self.contexts + self.cv_contexts):
+        for context in (self.contexts):
             for word in context.split(' '):
                 #Don't include target word
                 if word != "@"+self.tag+"@":
@@ -136,8 +135,8 @@ class Word(object):
                     
     #removes @word@ from context
     #takes in a tokenized string, not the string itself..
-    def clean_string(self,str):
-        temp = re.sub('@\S+@', '', str)
+    def clean_string(self,string):
+        temp = re.sub('@\S+@', '', string)
         return re.sub("[^a-z0-9A-Z\ ']",'',temp)
         
     def remove_stop_words(self,tokens):
@@ -149,7 +148,7 @@ class Word(object):
     def get_collocation_reference_vector(self):
         if not self.collocation_reference_vector:
                 self.collocation_reference_vector = \
-                    Collocation.get_collocation_reference(self.contexts + self.cv_contexts, self.tag)
+                    Collocation.get_reference(self.contexts)
         return self.collocation_reference_vector
 
 

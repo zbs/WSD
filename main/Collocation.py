@@ -1,12 +1,13 @@
 #import run
 #import Word
+import re
 
 COLLOCATION_BOUNDS = [(-1,-1), (1,1), (-2, -2), (2,2), (-2, -1), (-1, 1), \
                       (1,2), (-3,-1), (-2,1), (-1,2), (1,3)]
 MAX_OFFSET = 0
 MIN_OFFSET = 0
 
-EPSILON = "^!^"
+EPSILON = '\xcf\xb5'
 
 def format_tag(tag):
     return '@' + tag + '@'
@@ -44,6 +45,10 @@ def epsilon_pad(extracted_sentence_array, tag):
     
     return extracted_sentence_array
 
+def get_tag_from_context(context):
+    result = re.search( '@(?P<target>\S+)@', context )
+    return result.group('target')
+
 def remove_target(array, tag):
     try:
         index = array.index(format_tag(tag))
@@ -53,34 +58,36 @@ def remove_target(array, tag):
     del array[index]
     return array
 
-def get_collocation_vector(context, tag, word):
+def get_vector(context, word):
     
     reference_vector = word.get_collocation_reference_vector()
     # collocations_list is a binary feature vector. We initialize it to all zeroes, and change an entry
     # only if it corresponds to a collocation that exists in the given context
     collocations_list = [0] * len(reference_vector)
 
-    context = epsilon_pad(extract_sentence_array(context, tag), tag)
-    
+    tag = get_tag_from_context(context)
+    context_array = epsilon_pad(extract_sentence_array(context, tag), tag)
     try:
-        target_index = context.index(format_tag(tag))
+        target_index = context_array.index(format_tag(tag))
     except IndexError:
         raise Exception("Malformed context")
     #Iterate across all collocations as defined in the Collocation module
     for lower, upper in COLLOCATION_BOUNDS:
         relative_lower, relative_upper = target_index + lower, target_index + upper
-        if relative_lower < 0 and relative_upper > 0:
-            collocation = ' '.join(remove_target(context[relative_lower:relative_upper + 1], tag))
+        if lower < 0 and upper > 0:
+            collocation = ' '.join(remove_target(context_array[relative_lower:relative_upper + 1], tag))
         else:
-            collocation = ' '.join(context[relative_lower:relative_upper + 1])
-        if collocation in reference_vector:
-            collocation_index = reference_vector[collocation]
+            collocation = ' '.join(context_array[relative_lower:relative_upper + 1])
+        
+        collocation_key = ((lower,upper), collocation)
+        if collocation_key in reference_vector:
+            collocation_index = reference_vector[collocation_key]
             collocations_list[collocation_index] = 1
     return collocations_list
     
     
 
-def get_collocation_reference(contexts, tag):
+def get_reference(contexts):
     index = 0
     colloc_locations = {}
     
@@ -88,25 +95,26 @@ def get_collocation_reference(contexts, tag):
         # we do not cross sentence boundaries.
         # Additionally, pad the sentence with epsilon so that no collocation will incur
         # an IndexError.
-        context = epsilon_pad(extract_sentence_array(context, tag), tag)
+        tag = get_tag_from_context(context)
+        context_array = epsilon_pad(extract_sentence_array(context, tag), tag)
         try:
-            target_index = context.index(format_tag(tag))
+            target_index = context_array.index(format_tag(tag))
         except IndexError:
             raise Exception("Malformed context")
         #Iterate across all collocations as defined in the Collocation module
         for lower, upper in COLLOCATION_BOUNDS:
             relative_lower, relative_upper = target_index + lower, target_index + upper
-            if relative_lower < 0 and relative_upper > 0:
-                collocation = ' '.join(remove_target(context[relative_lower:relative_upper + 1], tag))
+            if lower < 0 and upper > 0:
+                collocation = ' '.join(remove_target(context_array[relative_lower:relative_upper + 1], tag))
             else:
-                collocation = ' '.join(context[relative_lower:relative_upper + 1])
+                collocation = ' '.join(context_array[relative_lower:relative_upper + 1])
             #Do not add duplicates
-            if collocation not in colloc_locations:
-                colloc_locations[collocation] = index
+            collocation_key = ((lower,upper), collocation)
+            if collocation_key not in colloc_locations:
+                colloc_locations[collocation_key] = index
                 index += 1
     return colloc_locations
 
-min, max = COLLOCATION_BOUNDS[0]
+MIN_OFFSET, MAX_OFFSET = COLLOCATION_BOUNDS[0]
 for lower, upper in COLLOCATION_BOUNDS:
-    min, max = lower if lower < min else min, upper if upper > max else max
-MIN_OFFSET, MAX_OFFSET = min, max
+    MIN_OFFSET, MAX_OFFSET = lower if lower < MIN_OFFSET else MIN_OFFSET, upper if upper > MAX_OFFSET else MAX_OFFSET
