@@ -22,7 +22,7 @@ class Word(object):
         self.feature_funs = feature_funs
         self.classez = [] # [n_samples, n_classes], "z" stands for the plural of classes
         self.contexts = []
-        self.cv_contexts = None
+        self.cv_contexts = []
         self.cv_classez = None
         self.num_classes = None
         self.test_contexts = []

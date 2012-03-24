@@ -13,7 +13,7 @@ from Word import Word
 import features
 # http://inclass.kaggle.com/c/cornell-cs4740-word-sense-disambiguation
 
-FEATURE_FUNS = (features.posNeighbors, features.cooccurrances, features.collocations) #add some more
+FEATURE_FUNS = (features.posNeighbors, features.cooccurrances) #add some more
 LIMIT_WORDS = False #true to test and/or train with limited # words
 
 LIMIT = 3

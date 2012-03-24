@@ -61,7 +61,7 @@ def cooccurrances(word,context):
     for i in context_tokens:
         root = (stemmer.stem(i)).lower()
         if root in word.tokens:
-            features[word.tokens[root]] += 1
+            features[word.tokens[root]] = 1
     return features
     
 def collocations(word, context):
