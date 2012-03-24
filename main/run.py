@@ -13,13 +13,14 @@ from Word import Word
 import features
 # http://inclass.kaggle.com/c/cornell-cs4740-word-sense-disambiguation
 
-FEATURE_FUNS = (features.posNeighbors, features.cooccurrances, features.collocations) #add some more
+#FEATURE_FUNS = (features.posNeighbors, features.cooccurrances, features.collocations) #add some more
+FEATURE_FUNS = (features.cooccurrances,)
 LIMIT_WORDS = False #true to test and/or train with limited # words
 
 LIMIT = 3
 REPICKLE_FILES = False #set to True to reparse data files
 REPICKLE_POS_TAGS = False #set to True to reset pos-tags
-TEST = True #true to run test set and write kaggle file
+TEST = False #true to run test set and write kaggle file
 # the percent of words that is put in the stop_word list
 STOP_WORD_PERCENT = 0.1
 

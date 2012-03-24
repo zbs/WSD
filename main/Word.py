@@ -149,7 +149,7 @@ class Word(object):
     def get_collocation_reference_vector(self):
         if not self.collocation_reference_vector:
                 self.collocation_reference_vector = \
-                    Collocation.get_reference(self.contexts + self.cv_contexts, self.tag)
+                    Collocation.get_reference(self.contexts + self.cv_contexts)
         return self.collocation_reference_vector
 
 

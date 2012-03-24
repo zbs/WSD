@@ -35,11 +35,12 @@ class Test(unittest.TestCase):
         epsilon = Collocation.EPSILON
         
         sentence = "He held it in his hands and @began@ to blub ."
-        calculated_dict = Collocation.get_collocation_reference([context_string], tag)
+        calculated_dict = Collocation.get_reference([context_string])
         
         self.assertEquals(11, len(calculated_dict))
-        expected_dict = {'and':0, 'to':1, 'hands':2, 'blub':3, 'hands and':4, 'and to':5, \
-                        'to blub': 6, 'his hands and':7, 'hands and to':8, 'and to blub':9, 'to blub .':10 }
+        expected_dict = {((-1,-1),'and'):0, ((1,1),'to'):1, ((-2,-2), 'hands'):2, ((2,2),'blub'):3, ((-2,-1), 'hands and'):4, ((-1,1), 'and to'):5, \
+                        ((1,2), 'to blub'): 6, ((-3,-1), 'his hands and'):7, ((-2,1),'hands and to'):8, ((-1,2), 'and to blub'):9, ((1,3), 'to blub .'):10 }
+        self.assertEquals(expected_dict, calculated_dict)
         
     def testGetCollocationVector(self):
         # This test is handwritten, and is dependent on COLLOCATION_BOUNDS being as they were
@@ -54,7 +55,7 @@ class Test(unittest.TestCase):
         one fragment of cleanly cut leather . He held it in his hands and @began@ to blub . 
         Oh master Conroy , do n't ! Don't upset yourself , lovie , do n't take on so !'''
         
-        calculated_dict = Collocation.get_collocation_reference([context_string], tag)
+        calculated_dict = Collocation.get_reference([context_string])
 
         class Word():
             def get_collocation_reference_vector(self):
@@ -68,9 +69,12 @@ class Test(unittest.TestCase):
         #     'to blub': 6, 'his hands and':7, 'hands and to':8, 'and to blub':9, 'to blub .':10 }
         
         expected_collocation_vector = [1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0]
-        calculated_collocation_vector = Collocation.get_collocation_vector(sample_context, "began", w)
+        calculated_collocation_vector = Collocation.get_vector(sample_context, w)
         
         self.assertEquals(len(calculated_collocation_vector), 11)
+        print ""
+        self.assertEquals(expected_collocation_vector, calculated_collocation_vector)
+        
     def testRemoveTag(self):
         self.assertEquals(['a', 'c'], Collocation.remove_target(['a', '@b@', 'c'], 'b'))
 
