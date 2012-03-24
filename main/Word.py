@@ -43,8 +43,10 @@ class Word(object):
     #Calls all the subroutines necessary after Word object populated with samples
     def setup(self):
         self.splitCV(.10)
+        self.build_context_list()
         self.classify()
-        #self.build_context_list()
+        #garbage collect
+        self.classez = self.contexts = None
         
     #split up the train data by word for cross-validation
     #we could make this more advanced
@@ -82,8 +84,7 @@ class Word(object):
         self.model = svm.LinearSVC( C = PENALTY, multi_class = True, scale_C = True)
         #self.model = svm.SVC( C = PENALTY, scale_C = True)
         self.model.fit(X,Y)
-        #garbage collect
-        self.classez = self.contexts = None
+        
         
     #isTest decides whether to use the cv or test data   
     def predict(self, isTest):

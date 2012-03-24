@@ -3,8 +3,11 @@ Need to run "nltk.download()" in Python and install "maxent_treebank_pos_tagger"
 
 Feature functions are of form f(word, context) => [features]
 '''
-import re
+import re, cPickle
 import nltk as nl
+
+pos_tags = {}
+pos_tags_changed = False
 
 POS_TYPES = { 'CC':0, 'CD':1, 'DT':2, 'EX':3, 'FW':4, 'IN':5, 'JJ':6, 'JJR':7, 'JJS':8, 'LS':9, 'MD':10, 'NN':11, 'NNS':12, 'NNP':13,
               'NNPS':14, 'PDT':15, 'POS':16, 'PRP':17, 'PRP$':18, 'RB':19, 'RBR':20, 'RBS':21, 'RP':22, 'SYM':23, 'TO':24, 'UH':25,
@@ -20,18 +23,25 @@ def posNeighbors(word, context):
     left =left.replace('@', '') # '@bank@ to @bank@' would otherwise cause error
     right = right.replace('@', '')
     target = result.group('target')
-    left_tokens = nl.word_tokenize(left)
-    right_tokens = nl.word_tokenize(right)
-    if len(left_tokens) >3 : left_tokens = left_tokens[-3:] # tokenizer splits "cannot" => "can" not"
-    if len(right_tokens) > 3 : right_tokens = right_tokens[:3] 
-    #tokenize left, target, and right together
-    pos = nl.pos_tag( left_tokens + [target] + right_tokens) #Uses Penn Treebank with 36+ POS 
-    #Add '-NONE-' tags to pos if there are less than 3 left or right neighbors
-    for i in range(3 - len(left_tokens)):
-        pos.insert(0, ('', '-NONE-'))
-    for i in range(3 - len(right_tokens)):
-        pos.append( ('', '-NONE-'))
-    pos.pop(3) #remove the target word
+    sequence = left + target + right
+    pos = None
+    if sequence in pos_tags:
+        pos = pos_tags[sequence]
+    else:
+        pos_tags_changed = True
+        left_tokens = nl.word_tokenize(left)
+        right_tokens = nl.word_tokenize(right)
+        if len(left_tokens) >3 : left_tokens = left_tokens[-3:] # tokenizer splits "cannot" => "can" not"
+        if len(right_tokens) > 3 : right_tokens = right_tokens[:3] 
+        #tokenize left, target, and right together
+        pos = nl.pos_tag( left_tokens + [target] + right_tokens) #Uses Penn Treebank with 36+ POS 
+        #Add '-NONE-' tags to pos if there are less than 3 left or right neighbors
+        for i in range(3 - len(left_tokens)):
+            pos.insert(0, ('', '-NONE-'))
+        for i in range(3 - len(right_tokens)):
+            pos.append( ('', '-NONE-'))
+        pos.pop(3) #remove the target word
+        pos_tags[sequence] = pos
     #print pos
     if (len(pos) != 6):
         print "len(pos)!=6 in in posNeighbors, figure out what went wrong"
