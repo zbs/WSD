@@ -4,6 +4,7 @@ from sklearn import svm
 from nltk import word_tokenize
 from nltk.stem.porter import *
 import re, heapq
+import Collocation
 
 CACHE_SIZE = 1000
 PENALTY = .1 #svm penalty parameter
@@ -28,7 +29,8 @@ class Word(object):
         self.test_classez = []
         self.model = None
         self.tokens = None
-    
+        self.collocation_reference_vector = None
+        
     #isTest determines whether the data is train or test.   
     def add_sample(self, classes, context, isTest = False):
         if isTest:
@@ -141,4 +143,15 @@ class Word(object):
             if word.lower() in STOP_WORDS:
                 tokens.remove(word)
         return tokens
-                
+    
+    def get_collocation_reference_vector(self):
+        
+        if not self.collocation_reference_vector:
+                self.collocation_reference_vector = \
+                    Collocation.get_collocation_reference(self.contexts + self.cv_contexts, self.tag)
+        return self.collocation_reference_vector
+
+
+
+    
+                        
