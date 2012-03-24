@@ -1,15 +1,11 @@
 #import numpy as np
 #import scipy as sp
 from nltk import word_tokenize
+from sklearn import svm
 from nltk.stem.porter import *
 import re, heapq
 import Collocation
 
-try:
-    from sklearn import svm
-except ImportError:
-    from scikits.learn import svm
-    
 CACHE_SIZE = 1000
 PENALTY = .1 #svm penalty parameter
 STOP_WORDS = ["i","a","about","an","are","as","at","be","by","for","from","how",
