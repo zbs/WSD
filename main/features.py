@@ -5,6 +5,7 @@ Feature functions are of form f(word, context) => [features]
 '''
 import re, cPickle
 import nltk as nl
+import Collocation
 
 pos_tags = {}
 pos_tags_changed = False
@@ -64,3 +65,5 @@ def cooccurrances(word,context):
             features[word.tokens[root]] += 1
     return features
     
+def collocations(word, context):
+    return Collocation.get_collocation_vector(context, word.tag, word)

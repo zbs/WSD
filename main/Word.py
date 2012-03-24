@@ -146,7 +146,6 @@ class Word(object):
         return tokens
     
     def get_collocation_reference_vector(self):
-        
         if not self.collocation_reference_vector:
                 self.collocation_reference_vector = \
                     Collocation.get_collocation_reference(self.contexts + self.cv_contexts, self.tag)

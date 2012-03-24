@@ -8,26 +8,6 @@ MIN_OFFSET = 0
 
 EPSILON = "^!^"
 
-def get_colloc_vector(tag, context, words):
-    """
-    word = run.get_word(words, tag)
-    vocabulary = word.get_vocabulary()
-    vocab_size = len(vocabulary)
-    context_words = context.split(" ")
-    try:
-        target_index = context_words.index('@'+tag+'@')
-    except ValueError:
-        raise Exception("Target word not contained in context")
-        
-    if not word:
-        raise Exception("Tag not found in list of words")
-    vector = [0] * vocab_size ** (UPPER_BOUND - LOWER_BOUND - 1) #-1 for excluding the target word
-
-    for i in range(LOWER_BOUND, UPPER_BOUND+1): #shift everything to the right by LOWER_BOUND
-        if i == 0:
-            continue
-    """
-
 def format_tag(tag):
     return '@' + tag + '@'
 
