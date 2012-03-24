@@ -18,38 +18,37 @@ NUM_POS_TYPES = 38
 
 def posNeighbors(word, context):
     #find the target and up to 3 words on each side
-    result =  re.search( '(?P<left>(\S+ ){1,3})@(?P<target>\S+)@(?P<right>( \S+){1,3})', context)
+    result =  re.search( '(?P<left>(\S+ ){1,5})@(?P<target>\S+)@(?P<right>( \S+){1,5})', context)
     left = re.split( '[?!\.]', result.group('left'))[-1] #don't include words in another sentence
     right = re.split( '[?!\.]', result.group('right'))[0]
-    left =left.replace('@', '') # '@bank@ to @bank@' would otherwise cause error
-    right = right.replace('@', '')
     target = result.group('target')
     sequence = left + target + right
-    pos = None
-    if sequence in pos_tags:
-        pos = pos_tags[sequence]
+    sequence = sequence.replace('@', '')  # '@bank@ to @bank@' would otherwise cause error  
+    pos_neighbors = []
+    if sequence in pos_tags: #if it's been pickled
+        pos_neighbors = pos_tags[sequence]
     else:
-        pos_tags_changed = True
-        left_tokens = nl.word_tokenize(left)
-        right_tokens = nl.word_tokenize(right)
-        if len(left_tokens) >3 : left_tokens = left_tokens[-3:] # tokenizer splits "cannot" => "can" not"
-        if len(right_tokens) > 3 : right_tokens = right_tokens[:3] 
-        #tokenize left, target, and right together
-        pos = nl.pos_tag( left_tokens + [target] + right_tokens) #Uses Penn Treebank with 36+ POS 
-        #Add '-NONE-' tags to pos if there are less than 3 left or right neighbors
-        for i in range(3 - len(left_tokens)):
-            pos.insert(0, ('', '-NONE-'))
-        for i in range(3 - len(right_tokens)):
-            pos.append( ('', '-NONE-'))
-        pos.pop(3) #remove the target word
-        pos_tags[sequence] = pos
-    #print pos
-    if (len(pos) != 6):
-        print "len(pos)!=6 in in posNeighbors, figure out what went wrong"
-    features = [ 0 for _ in range( NUM_POS_TYPES*len(pos) ) ] #binary feature vector - 36+ POS for each neighbor
-    for i in range( len(pos) ):
+        pos_tags_changed = True #there's been a change so will have to dump pickle data later
+        tokens = nl.word_tokenize(sequence)
+        pos = nl.pos_tag( tokens )
+        target_index = tokens.index(target)
+        for i in range(3): #find the three pos to left of target
+            if target_index - i - 1 >= 0:
+                pos_neighbors.append( pos[target_index - i -1])
+            else:
+                pos_neighbors.append(('', '-NONE-'))
+        for i in range(3): # find 3 to right
+            if target_index + i + 1 < len(pos):
+                pos_neighbors.append( pos[target_index + i + 1])
+            else:
+                pos_neighbors.append(('', '-NONE-'))
+        pos_tags[sequence] = pos_neighbors
+    #print sequence
+    #print pos_neighbors
+    features = [ 0 for _ in range( NUM_POS_TYPES*len(pos_neighbors) ) ] #binary feature vector - 36+ POS for each neighbor
+    for i in range( len(pos_neighbors) ):
         #turn on the corresponding feature for the pos of each neighbors
-        features[ NUM_POS_TYPES*i + POS_TYPES[ pos[i][1] ] ] = 1
+        features[ NUM_POS_TYPES*i + POS_TYPES[ pos_neighbors[i][1] ] ] = 1
     return features
     
 def cooccurrances(word,context):

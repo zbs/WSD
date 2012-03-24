@@ -41,8 +41,9 @@ class Word(object):
             self.classez.append(classes)
     
     #Calls all the subroutines necessary after Word object populated with samples
-    def setup(self):
-        self.splitCV(.10)
+    def setup(self, isTest):
+        if not isTest:
+            self.splitCV(.10)
         self.build_context_list()
         self.classify()
         #garbage collect

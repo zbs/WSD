@@ -55,7 +55,7 @@ def buildModels(examples, feature_funs):
             words.append( Word(curr_tag, feature_funs) )
         words[-1].add_sample( classes, context)
         
-    map(lambda word: word.setup(), words)
+    map(lambda word: word.setup(TEST), words)
     return words
 
 #If using test data, then set the "tests" variable. Otherwise cv data is used
