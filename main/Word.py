@@ -1,11 +1,15 @@
 #import numpy as np
 #import scipy as sp
-from sklearn import svm
 from nltk import word_tokenize
 from nltk.stem.porter import *
 import re, heapq
 import Collocation
 
+try:
+    from sklearn import svm
+except ImportError:
+    from scikits.learn import svm
+    
 CACHE_SIZE = 1000
 PENALTY = .1 #svm penalty parameter
 STOP_WORDS = ["i","a","about","an","are","as","at","be","by","for","from","how",
@@ -136,8 +140,8 @@ class Word(object):
                     
     #removes @word@ from context
     #takes in a tokenized string, not the string itself..
-    def clean_string(self,str):
-        temp = re.sub('@\S+@', '', str)
+    def clean_string(self,string):
+        temp = re.sub('@\S+@', '', string)
         return re.sub("[^a-z0-9A-Z\ ']",'',temp)
         
     def remove_stop_words(self,tokens):
