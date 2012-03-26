@@ -51,7 +51,7 @@ def posNeighbors(word, context):
         features[ NUM_POS_TYPES*i + POS_TYPES[ pos_neighbors[i][1] ] ] = 1
     return features
     
-def cooccurrances(word,context):
+def cooccurrences(word,context):
     context_tokens = nl.word_tokenize(word.clean_string(context))
     stemmer = nl.stem.porter.PorterStemmer()
     
