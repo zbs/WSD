@@ -66,3 +66,8 @@ def cooccurrences(word,context):
     
 def collocations(word, context):
     return Collocation.get_vector(context, word)
+
+# serves as a bypass so that we can keep code structure untouched
+# (for use in baseline calc)
+def most_frequent(word,context):
+    return []
