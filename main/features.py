@@ -16,7 +16,9 @@ POS_TYPES = { 'CC':0, 'CD':1, 'DT':2, 'EX':3, 'FW':4, 'IN':5, 'JJ':6, 'JJR':7, '
               "''":36, '-NONE-':37 }
 NUM_POS_TYPES = 38
 
+OUTPUT_COUNT = 5
 def posNeighbors(word, context):
+    global OUTPUT_COUNT
     #find the target and up to 3 words on each side
     result =  re.search( '(?P<left>(\S+ ){1,5})@(?P<target>\S+)@(?P<right>( \S+){1,5})', context)
     left = re.split( '[?!\.]', result.group('left'))[-1] #don't include words in another sentence
@@ -43,12 +45,18 @@ def posNeighbors(word, context):
             else:
                 pos_neighbors.append(('', '-NONE-'))
         pos_tags[sequence] = pos_neighbors
-    #print sequence
-    #print pos_neighbors
+    if OUTPUT_COUNT > 0:
+        print "Sequence to tag parts-of-speech %s"%str(sequence)
+        print "Parts-of-speech %s"%str(pos_neighbors)
+    
     features = [ 0 for _ in range( NUM_POS_TYPES*len(pos_neighbors) ) ] #binary feature vector - 36+ POS for each neighbor
     for i in range( len(pos_neighbors) ):
         #turn on the corresponding feature for the pos of each neighbors
         features[ NUM_POS_TYPES*i + POS_TYPES[ pos_neighbors[i][1] ] ] = 1
+    if OUTPUT_COUNT > 0:
+        print "Part-of-speech feature vector %s"%str(features)
+    
+    OUTPUT_COUNT -= 1
     return features
     
 def cooccurrances(word,context):
