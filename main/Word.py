@@ -5,9 +5,9 @@ from sklearn import svm
 from nltk.stem.porter import *
 import re, heapq
 import Collocation
+import features
 
-CACHE_SIZE = 1000
-PENALTY = .1 #svm penalty parameter
+PENALTY = 2 #svm penalty parameter
 STOP_WORDS = ["i","a","about","an","are","as","at","be","by","for","from","how",
               "in","is","it","of","on","or","that","the","this","to","was","what",
               "when","where","who","will","with","the"]
@@ -30,6 +30,7 @@ class Word(object):
         self.model = None
         self.tokens = None
         self.collocation_reference_vector = None
+        self.sense_counts = []
         
     #isTest determines whether the data is train or test.   
     def add_sample(self, classes, context, isTest = False):
@@ -45,6 +46,7 @@ class Word(object):
         if not isTest:
             self.splitCV(.10)
         self.build_context_list()
+        self.sense_counts = self.get_sense_counts()
         self.classify()
         #garbage collect
         self.classez = self.contexts = None
@@ -93,6 +95,10 @@ class Word(object):
         #convert int classification to binary
         #OK fine, it was easier to not use a map here
         predictions = self.model.predict(T)
+        if self.feature_funs == (features.most_frequent,):
+            c = map(lambda x: x/max(self.sense_counts),self.sense_counts)
+            C = [c for j in predictions]
+            return sum(C,[])
         return sum([[int(i == j) for i in range(self.num_classes)] for j in predictions], [])
     
     def get_actual(self, isTest):
@@ -106,7 +112,7 @@ class Word(object):
         """
         all_words = set()
         #Get all contexts by concatenating the partitioned groups
-        for context in (self.contexts + self.cv_contexts):
+        for context in (self.contexts):
             for word in context.split(' '):
                 #Don't include target word
                 if word != "@"+self.tag+"@":
@@ -149,9 +155,11 @@ class Word(object):
     def get_collocation_reference_vector(self):
         if not self.collocation_reference_vector:
                 self.collocation_reference_vector = \
-                    Collocation.get_reference(self.contexts, self.tag)
+                    Collocation.get_reference(self.contexts)
         return self.collocation_reference_vector
 
+    def get_sense_counts(self):
+        return reduce(lambda classez1,classez2: map(lambda x,y: x+y,classez1,classez2),self.classez)
 
 
     

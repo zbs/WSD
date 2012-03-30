@@ -59,7 +59,7 @@ def posNeighbors(word, context):
     OUTPUT_COUNT -= 1
     return features
     
-def cooccurrances(word,context):
+def cooccurrences(word,context):
     context_tokens = nl.word_tokenize(word.clean_string(context))
     stemmer = nl.stem.porter.PorterStemmer()
     
@@ -69,8 +69,13 @@ def cooccurrances(word,context):
     for i in context_tokens:
         root = (stemmer.stem(i)).lower()
         if root in word.tokens:
-            features[word.tokens[root]] += 1
+            features[word.tokens[root]] = 1
     return features
     
 def collocations(word, context):
     return Collocation.get_vector(context, word)
+
+# serves as a bypass so that we can keep code structure untouched
+# (for use in baseline calc)
+def most_frequent(word,context):
+    return []
